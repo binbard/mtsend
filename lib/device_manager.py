@@ -7,15 +7,19 @@ import threading
 class DeviceManager():
     def __init__(self):
         self.devices: dict[str, Device] = {}
-        self.on = True
     
     def add_device(self, ip, name, admin=False):
+        if ip not in self.devices:
+            mprint(f'New device {name} has joined')
         if admin:
             self.devices[ip] = Device(ip, name, DeviceType.ADMIN, 0)
+            self.devices[ip].last_seen = time.time()
         else:
             self.devices[ip] = Device(ip, name, DeviceType.CLIENT, 0)
+            self.devices[ip].last_seen = time.time()
     
     def remove_device(self, ip: str):
+        mprint(f'Device {self.devices[ip].name} has left')
         del self.devices[ip]
     
     def get_devices(self):
@@ -29,13 +33,13 @@ class DeviceManager():
             self.add_device(ip, name)
     
     def device_remove_listener(self):
-        while self.on:
-            for device in self.devices.values():
-                if device.last_seen < time.time() - globals.DEVICE_ONLINE_TIMEOUT:
+        while True:
+            for device in list(self.devices.values()):
+                if time.time() - device.last_seen > globals.DEVICE_ONLINE_TIMEOUT*1.1:
                     self.remove_device(device.ip)
     
     def start(self):
-        device_remove_thread = threading.Thread(target=self.device_remove_listener)
+        device_remove_thread = threading.Thread(target=self.device_remove_listener, daemon=True)
         device_remove_thread.start()
     
     def close(self):

@@ -1,8 +1,4 @@
-from enum import Enum
-
-class DeviceType(Enum):
-    ADMIN = 0
-    CLIENT = 1
+from models.device_type import DeviceType
 
 class Device():
     def __init__(self, ip: str, name: str, type: DeviceType, last_seen: int):

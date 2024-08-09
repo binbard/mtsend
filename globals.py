@@ -1,5 +1,7 @@
 import os
 import logging
+from models.device_type import DeviceType
+import names
 
 ### Constants
 
@@ -7,10 +9,16 @@ DEV_MODE = False
 
 APP_NAME = 'MtSend'
 
-DEVICE_ONLINE_TIMEOUT = 30
+DEVICE_ONLINE_TIMEOUT = 10
+DEVICE_TYPE = DeviceType.CLIENT
+
+DEVICE_NAME = names.get_full_name()
 
 MC_HOST = '224.0.0.1'
-MC_PORT = 8091
+MC_PORT = 8090
+
+MC_SEND_HOST = MC_HOST
+MC_SEND_PORT = MC_PORT
 
 fmt_str = 'B1023s'
 
@@ -43,12 +51,12 @@ handler.setFormatter(formatter)
 logger.addHandler(handler)
 logger.setLevel(logging.INFO)
 
-def mprint(message):
+def mprint(*args):
     global DEV_MODE
+    message = ' '.join(map(str, args))
     if DEV_MODE:
         print(message)
     else:
         logger.info(message)
-
 
 print('Globals module loaded')
