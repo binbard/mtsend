@@ -15,10 +15,12 @@ class GroupManager():
         group = Group(name, desc, creator)
         self.groups.append(group)
         mprint(f'New group {name} has been created')
+        globals.db_helper.set_group(group)
         globals.service_queue.put({'type': EventType.GROUPS_UPDATED})
     
     def remove_group(self, name, creator):
         group = Group(name, creator)
         self.groups.remove(group)
         mprint(f'Group {name} has been removed')
+        globals.db_helper.remove_group(group)
         globals.service_queue.put({'type': EventType.GROUPS_UPDATED})

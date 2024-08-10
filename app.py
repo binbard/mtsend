@@ -6,6 +6,7 @@ from client.client_ui import ClientUI
 from lib.main_socket import MainSocket
 from lib.device_manager import DeviceManager
 from lib.group_manager import GroupManager
+from helpers.get_self_ip import get_my_ip
 from tkinter import Tk
 import queue
 
@@ -26,7 +27,7 @@ class MtSendApplication():
         self.on = True
     
     def run(self):
-        mprint('=> You are user', globals.DEVICE_NAME)
+        mprint('=> You are user', globals.DEVICE_NAME, get_my_ip())
         self.main_socket.start()
         self.app_ui.mainloop()
     

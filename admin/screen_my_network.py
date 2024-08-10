@@ -76,9 +76,7 @@ def screen_my_network(self):
 
     self.after(1000, partial(handle_queue, self))
 
-    # Function to handle "Add Group" button click
     def add_group():
-        # Create a pop-up window
         group_popup = tk.Toplevel(self)
         group_popup.title("Add Group")
 
@@ -88,7 +86,7 @@ def screen_my_network(self):
 
         def confirm_group():
             group_name = group_name_entry.get().strip()
-            if group_name:  # Ensure that the group name is not empty
+            if group_name:
                 selected_devices = [name for var, name in zip(self.check_vars, self.device_labels) if var.get()]
                 if selected_devices:
                     display_group_info(group_name, selected_devices)
@@ -101,24 +99,18 @@ def screen_my_network(self):
 
         tk.Button(group_popup, text="Confirm", command=confirm_group).pack(padx=10, pady=10)
 
-    # Add the "Add Group" button below the devices list
     tk.Button(self.main_frame, text="Add Group", command=add_group).pack(pady=20)
 
-    # Initialize the group display frame here
     self.group_display_frame = tk.Frame(self.main_frame)
     self.group_display_frame.pack(pady=20, fill=tk.X)
 
-    # Function to display group information in the frame below "Add Group" button
     def display_group_info(group_name, selected_devices):
-        # Create a new frame for each group
         group_frame = tk.Frame(self.group_display_frame)
         group_frame.pack(fill=tk.X, pady=10)
 
-        # Display the group name
         group_label = tk.Label(group_frame, text=f"Group Name: {group_name}", font=('bold', 12))
         group_label.pack(pady=5)
 
-        # Display the selected devices
         devices_label = tk.Label(group_frame, text="Selected Devices:", font=('bold', 10))
         devices_label.pack(pady=5)
 

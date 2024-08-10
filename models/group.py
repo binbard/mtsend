@@ -6,6 +6,7 @@ class Group():
         self.creator = creator
         self.admins = []
         self.members = []
+        self.messages = []
 
     def add_member(self, member):
         if member not in self.members:

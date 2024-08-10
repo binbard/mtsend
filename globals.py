@@ -3,6 +3,8 @@ import logging
 from models.device_type import DeviceType
 import names
 from queue import Queue
+import importlib
+import helpers.db_helper as DbHelper
 
 ### Constants
 
@@ -13,7 +15,7 @@ APP_NAME = 'MtSend'
 DEVICE_ONLINE_TIMEOUT = 10
 DEVICE_TYPE = DeviceType.CLIENT
 
-DEVICE_NAME = names.get_full_name()
+DEVICE_NAME = None
 
 MC_HOST = '224.0.0.2'
 MC_PORT = 8090
@@ -51,7 +53,13 @@ def temp_path(file_name):
 def data_path(file_name):
     return mpath(file_name, data_directory)
 
-groups_file = data_path('groups.json')
+db_helper: DbHelper = importlib.import_module('helpers.db_helper')
+
+DEVICE_NAME = db_helper.get_devicename()
+if DEVICE_NAME is None:
+    DEVICE_NAME = names.get_full_name()
+    db_helper.set_devicename(DEVICE_NAME)
+
 
 ### Logging configuration
 

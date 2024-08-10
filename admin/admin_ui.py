@@ -9,6 +9,7 @@ from lib.device_manager import DeviceManager
 from lib.group_manager import GroupManager
 from admin.admin_service import AdminService
 from lib.main_socket import MainSocket
+from helpers.get_self_ip import get_my_ip
 import queue
 import threading
 from functools import partial
@@ -64,8 +65,4 @@ class AdminUI(tk.Tk):
         messagebox.showinfo("About", f"Solution made by: {", ".join(globals.AUTHORS)} for Tally CodeBrewers")
 
     def you_action(self):
-        messagebox.showinfo("You", f"You are {globals.DEVICE_NAME}")
-
-if __name__ == "__main__":
-    app = ClientUI()
-    app.mainloop()
+        messagebox.showinfo("You", f"You are {globals.DEVICE_NAME} and your IP is {get_my_ip()}")
