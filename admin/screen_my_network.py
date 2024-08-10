@@ -40,7 +40,7 @@ def screen_my_network(self):
 
         device_frame = tk.Frame(self.devices_frame)
         device_frame.pack(fill=tk.BOTH, expand=True)
-        
+        print(device)
         for row, device in enumerate(devices):
             ip_label = tk.Label(device_frame, text=device.ip)
             name_label = tk.Label(device_frame, text=device.name)
