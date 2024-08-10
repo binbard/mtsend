@@ -5,6 +5,7 @@ from models.event_type import EventType
 from models.device import Device
 from admin.screen_my_groups import screen_my_groups
 from admin.screen_my_network import screen_my_network
+from admin.screen_manage_group import screen_manage_group
 from lib.device_manager import DeviceManager
 from lib.group_manager import GroupManager
 from admin.admin_service import AdminService
@@ -57,6 +58,9 @@ class AdminUI(tk.Tk):
 
         screen2_button = tk.Button(self.toolbar_frame, text="My Groups", command=partial(screen_my_groups, self))
         screen2_button.pack(side=tk.LEFT, padx=2, pady=2)
+
+        screen3_button = tk.Button(self.toolbar_frame, text="Manage Group", command=partial(screen_manage_group, self))
+        screen3_button.pack(side=tk.LEFT, padx=2, pady=2)
 
     def exit_app(self):
         self.quit()
