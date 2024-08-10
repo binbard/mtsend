@@ -7,6 +7,8 @@ from admin.screen_my_groups import screen_my_groups
 from admin.screen_my_network import screen_my_network
 from lib.device_manager import DeviceManager
 from lib.group_manager import GroupManager
+from admin.admin_service import AdminService
+from lib.main_socket import MainSocket
 import queue
 import threading
 from functools import partial
@@ -17,13 +19,12 @@ def get_title(subtitle = ''):
     return title + ' - ' + subtitle
 
 class AdminUI(tk.Tk):
-    def __init__(self, device_manager: DeviceManager, group_manager: GroupManager):
+    def __init__(self, main_socket: MainSocket, device_manager: DeviceManager, group_manager: GroupManager):
         super().__init__()
         self.title(get_title())
         self.geometry("800x600")
 
-        self.device_manager = device_manager
-        self.group_manager = group_manager
+        self.admin_service = AdminService(main_socket, device_manager, group_manager)
 
         self.toolbar_frame = tk.Frame(self, bd=1, relief=tk.RAISED)
         self.toolbar_frame.pack(side=tk.TOP, fill=tk.X)

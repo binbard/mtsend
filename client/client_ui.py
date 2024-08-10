@@ -5,6 +5,8 @@ from models.event_type import EventType
 from models.device import Device
 from lib.device_manager import DeviceManager
 from lib.group_manager import GroupManager
+from client.client_service import ClientService
+from lib.main_socket import MainSocket
 from client.screen_my_groups import screen_my_groups
 from client.screen_my_network import screen_my_network
 import queue
@@ -13,13 +15,12 @@ from functools import partial
 import os
 
 class ClientUI(tk.Tk):
-    def __init__(self, device_manager: DeviceManager, group_manager: GroupManager):
+    def __init__(self, main_socket: MainSocket, device_manager: DeviceManager, group_manager: GroupManager):
         super().__init__()
         self.title(self.get_title())
         self.geometry("800x600")
 
-        self.device_manager = device_manager
-        self.group_manager = group_manager
+        self.client_service = ClientService(main_socket, device_manager, group_manager)
 
         self.toolbar_frame = tk.Frame(self, bd=1, relief=tk.RAISED)
         self.toolbar_frame.pack(side=tk.TOP, fill=tk.X)

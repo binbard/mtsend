@@ -22,11 +22,11 @@ def screen_my_network(self):
                 for widget in self.devices_frame.winfo_children():
                     widget.destroy()
 
-            if self.device_manager.is_empty():
+            if self.client_service.device_manager.is_empty():
                 tk.Label(self.devices_frame, text="No online devices", font=('bold')).pack()
                 return
             
-            devices = self.device_manager.get_devices()
+            devices = self.client_service.device_manager.get_devices()
             
             headers = ["IP", "Name", "Type", "Online"]
             header_frame = tk.Frame(self.devices_frame)
