@@ -1,11 +1,14 @@
+import json
+
 class Group():
-    def __init__(self, name: str, creator = ''):
-        self.id = f"{creator}_{name}"
+    def __init__(self, id, name: str, creator: str, participants = []):
+        self.id = id
         self.name = name
         self.desc = ''
         self.creator = creator
+        self.password = ''
         self.admins = []
-        self.members = []
+        self.members = participants
         self.messages = []
 
     def add_member(self, member):
@@ -23,3 +26,8 @@ class Group():
     def remove_admin(self, admin):
         if admin in self.admins:
             self.admins.remove(admin)
+
+    def __eq__(self, value: object) -> bool:
+        if isinstance(value, Group):
+            return self.id == value.id
+        return False

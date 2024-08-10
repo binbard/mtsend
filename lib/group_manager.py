@@ -9,18 +9,21 @@ import queue
 
 class GroupManager():
     def __init__(self):
-        self.groups: Group = []
+        self.groups: Group = globals.db_helper.get_groups()
     
-    def add_group(self, name, desc, creator):
-        group = Group(name, desc, creator)
-        self.groups.append(group)
-        mprint(f'New group {name} has been created')
-        globals.db_helper.set_group(group)
-        globals.service_queue.put({'type': EventType.GROUPS_UPDATED})
+    def add_group(self, id, name, creator = globals.DEVICE_NAME, participants = []) -> Group:
+        group = Group(id, name, creator, participants)
+        if group not in self.groups:
+            self.groups.append(group)
+            mprint(f'New group {name} has been created')
+            globals.db_helper.set_group(group)
+            globals.service_queue.put({'type': EventType.GROUPS_UPDATED})
+            return group
     
-    def remove_group(self, name, creator):
-        group = Group(name, creator)
-        self.groups.remove(group)
-        mprint(f'Group {name} has been removed')
-        globals.db_helper.remove_group(group)
-        globals.service_queue.put({'type': EventType.GROUPS_UPDATED})
+    def remove_group(self, id):
+        group = self.get_group(id)
+        if group:
+            self.groups.remove(group)
+            mprint(f'Group {group.name} has been removed')
+            globals.db_helper.remove_group(group)
+            globals.service_queue.put({'type': EventType.GROUPS_UPDATED})
