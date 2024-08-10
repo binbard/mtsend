@@ -121,7 +121,6 @@ class MainSocket():
                 mprint(f'Error: {e}')
     
     def send(self, packet_type: PacketType, data: bytes, address = (globals.MC_SEND_HOST, globals.MC_SEND_PORT)):
-        print('sending', packet_type, address)
         if len(data) > 1023:
             raise ValueError('Data length is greater than 1023')
         

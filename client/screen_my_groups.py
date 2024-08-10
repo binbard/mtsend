@@ -1,6 +1,9 @@
+import globals
 import tkinter as tk
 from functools import partial
+from models.event_type import EventType
 import os
+import queue
 
 def open_file(file_name):
     file_path = os.path.join(os.getcwd(), file_name)
@@ -15,11 +18,11 @@ def show_chat(self, group_name):
     for message in chat_history:
         if message["type"] == "text":
             label = tk.Label(self.chat_display, text=message["content"], anchor='w', padx=10, pady=5, bg="white")
-            label.pack(fill=tk.X, pady=2)  # Add vertical padding
+            label.pack(fill=tk.X, pady=2)
         elif message["type"] == "file":
             file_name = message["content"]
             button = tk.Button(self.chat_display, text=f"File: {file_name}", relief=tk.FLAT, bg="lightblue", padx=10, pady=5)
-            button.pack(fill=tk.X, pady=2)  # Add vertical padding
+            button.pack(fill=tk.X, pady=2)
             button.bind("<Button-1>", lambda e, f=file_name: open_file(f))
     
     for widget in self.names_frame.winfo_children():
@@ -34,7 +37,7 @@ def send_message(self):
     message = self.chat_entry.get()
     if message:
         label = tk.Label(self.chat_display, text="You: " + message, anchor='w', padx=10, pady=5, bg="white")
-        label.pack(fill=tk.X, pady=2)  # Add vertical padding
+        label.pack(fill=tk.X, pady=2)
         self.chat_entry.delete(0, tk.END)
 
 def screen_my_groups(self):
@@ -73,7 +76,32 @@ def screen_my_groups(self):
         "Group 3": [{"type": "text", "content": "Chat history for Group 3."}]
     }
 
-    for group_name in self.group_chats.keys():
-        label = tk.Label(self.names_frame, text=group_name, padx=10, pady=5, anchor='w', cursor="hand2", font=("Arial", 14), bg="lightgray")
-        label.pack(fill=tk.X)
-        label.bind("<Button-1>", lambda event, g=group_name: partial(show_chat, self)(g))
+    def update_groups(self):
+        for widget in self.names_frame.winfo_children():
+            widget.destroy()
+
+        groups = self.client_service.group_manager.groups
+        for group in groups:
+            self.group_chats[group.name] = group.messages
+            
+        for group_name in self.group_chats.keys():
+            label = tk.Label(self.names_frame, text=group_name, padx=10, pady=5, anchor='w', cursor="hand2", font=("Arial", 14), bg="lightgray")
+            label.pack(fill=tk.X)
+            label.bind("<Button-1>", lambda event, g=group_name: partial(show_chat, self)(g))
+        
+    update_groups(self)
+
+    def handle_queue(self):
+        for i in range(globals.service_queue.qsize()):
+            try:
+                data = globals.service_queue.get(timeout=1)
+                dtype = data.get('type')
+                if dtype == EventType.GROUPS_UPDATED:
+                    update_groups(self)
+                else:
+                    globals.service_queue.put(data)
+            except queue.Empty:
+                pass
+        self.after(1000, partial(handle_queue, self))
+
+    self.after(1000, partial(handle_queue, self))
