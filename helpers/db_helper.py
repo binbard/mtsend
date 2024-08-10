@@ -43,10 +43,10 @@ def add_group_message(group_id, message):
         _db.table('groups').update({'messages': messages}, Group.id == group_id)
 
 def set_group(group):
-    _db.table('groups').upsert(group, Group.id == group['id'])
+    _db.table('groups').upsert(group, Group.id == group.id)
 
 def remove_group(group):
-    _db.table('groups').remove(Group.id == group['id'])
+    _db.table('groups').remove(Group.id == group.id)
 
 def set_messages(group_id, messages):
     group = _db.table('groups').get(Group.id == group_id)

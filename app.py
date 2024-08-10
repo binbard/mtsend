@@ -16,7 +16,7 @@ class MtSendApplication():
         self.device_manager = DeviceManager()
         self.device_manager.start()
         
-        self.main_socket = MainSocket(self.device_manager)
+        self.main_socket = MainSocket(self.device_manager, self.group_manager)
 
         self.app_ui: Tk = None
         if globals.DEVICE_TYPE == DeviceType.ADMIN:

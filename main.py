@@ -21,9 +21,11 @@ def main():
     
     if args.listen or args.recv:
         globals.MC_PORT = args.listen or args.recv
+        globals.TESTING_LOCAL = True
     
     if args.send:
         globals.MC_SEND_PORT = args.send
+        globals.TESTING_LOCAL = True
 
     if args.name:
         globals.DEVICE_NAME = args.name

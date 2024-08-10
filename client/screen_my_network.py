@@ -58,7 +58,7 @@ def screen_my_network(self):
             for i in range(globals.service_queue.qsize()):
                 try:
                     data = globals.service_queue.get(timeout=1)
-                    print('lol', data)
+                    # print('lol', data)
                     dtype = data.get('type')
                     if dtype == EventType.DEVICES_UPDATED:
                         update_devices(self)

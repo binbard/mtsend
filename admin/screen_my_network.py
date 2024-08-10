@@ -40,7 +40,7 @@ def screen_my_network(self):
 
         device_frame = tk.Frame(self.devices_frame)
         device_frame.pack(fill=tk.BOTH, expand=True)
-        print(device)
+        # print(device)
         for row, device in enumerate(devices):
             ip_label = tk.Label(device_frame, text=device.ip)
             name_label = tk.Label(device_frame, text=device.name)
@@ -57,7 +57,7 @@ def screen_my_network(self):
             check_button.pack(side=tk.LEFT, padx=5, pady=5)
 
             self.check_vars.append(var)
-            self.device_labels.append(device.name)
+            self.device_labels.append(device.ip)
 
     update_devices(self)
     
@@ -86,10 +86,10 @@ def screen_my_network(self):
 
         def confirm_group():
             group_name = group_name_entry.get().strip()
-            if group_name:
+            if group_name and group_name != "":
                 selected_devices = [name for var, name in zip(self.check_vars, self.device_labels) if var.get()]
                 if selected_devices:
-                    display_group_info(group_name, selected_devices)
+                    self.admin_service.create_new_group(group_name, selected_devices)
                 else:
                     display_group_info(group_name, ["No devices selected"])
             else:
