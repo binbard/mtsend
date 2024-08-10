@@ -19,9 +19,9 @@ class MtSendApplication():
 
         self.app_ui: Tk = None
         if globals.DEVICE_TYPE == DeviceType.ADMIN:
-            self.app_ui = AdminUI(self.device_manager, self.group_manager)
+            self.app_ui = AdminUI(self.main_socket, self.device_manager, self.group_manager)
         else:
-            self.app_ui = ClientUI(self.device_manager, self.group_manager)
+            self.app_ui = ClientUI(self.main_socket, self.device_manager, self.group_manager)
 
         self.on = True
     
