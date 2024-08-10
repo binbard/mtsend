@@ -14,13 +14,19 @@ DEVICE_TYPE = DeviceType.CLIENT
 
 DEVICE_NAME = names.get_full_name()
 
-MC_HOST = '224.0.0.1'
+MC_HOST = '224.0.0.2'
 MC_PORT = 8090
 
 MC_SEND_HOST = MC_HOST
 MC_SEND_PORT = MC_PORT
 
 fmt_str = 'B1023s'
+
+AUTHORS = [
+    'Gaurav Singh Mehra',
+    'Suryansh Bajpai',
+    'Harshit Jawla',
+]
 
 home_directory = os.path.dirname(os.path.abspath(__file__))
 

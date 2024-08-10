@@ -24,8 +24,6 @@ class MainSocket():
     def start(self):
         threading.Thread(target=self.listen, daemon=True).start()
         threading.Thread(target=self.online_teller, daemon=True).start()
-        while True:
-            pass
 
     def online_teller(self):
         mprint('Online teller started')

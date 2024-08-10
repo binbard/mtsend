@@ -1,25 +1,28 @@
 import globals
 from globals import mprint
 from models.device import Device, DeviceType
+from models.event_type import EventType
 import time
 import threading
+import queue
 
 class DeviceManager():
-    def __init__(self):
+    def __init__(self, service_queue: queue.Queue):
         self.devices: dict[str, Device] = {}
+        self.service_queue = service_queue
     
     def add_device(self, ip, name, admin=False):
         if ip not in self.devices:
             mprint(f'New device {name} has joined')
+            self.service_queue.put({'type': EventType.DEVICES_UPDATED})
         if admin:
-            self.devices[ip] = Device(ip, name, DeviceType.ADMIN, 0)
-            self.devices[ip].last_seen = time.time()
+            self.devices[ip] = Device(ip, name, DeviceType.ADMIN, time.time())
         else:
-            self.devices[ip] = Device(ip, name, DeviceType.CLIENT, 0)
-            self.devices[ip].last_seen = time.time()
+            self.devices[ip] = Device(ip, name, DeviceType.CLIENT, time.time())
     
     def remove_device(self, ip: str):
         mprint(f'Device {self.devices[ip].name} has left')
+        self.service_queue.put({'type': EventType.DEVICES_UPDATED})
         del self.devices[ip]
     
     def get_devices(self):
