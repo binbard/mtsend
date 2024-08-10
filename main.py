@@ -13,7 +13,7 @@ def main():
     parser.add_argument('--listen', type=int, help='Listen on port')
     parser.add_argument('--recv', type=int, help='Listen on port')
     parser.add_argument('--send', type=int, help='Send to port')
-    parser.add_argument('--name', type=int, help='Device name')
+    parser.add_argument('--name', type=str, help='Device name')
     args = parser.parse_args()
     
     if args.type == 'server' or args.type == 'admin':
