@@ -48,6 +48,8 @@ def temp_path(file_name):
 def data_path(file_name):
     return mpath(file_name, data_directory)
 
+groups_file = data_path('groups.json')
+
 ### Logging configuration
 
 logger = logging.getLogger(APP_NAME)

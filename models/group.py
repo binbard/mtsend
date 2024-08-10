@@ -1,7 +1,9 @@
 class Group():
-    def __init__(self, name: str, desc: str = ''):
+    def __init__(self, name: str, creator = ''):
+        self.id = f"{creator}_{name}"
         self.name = name
         self.desc = ''
+        self.creator = creator
         self.admins = []
         self.members = []
 

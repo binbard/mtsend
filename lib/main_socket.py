@@ -56,6 +56,13 @@ class MainSocket():
                     
                 elif ptype == PacketType.GROUP_JOIN_REQ:
                     mprint(f'Admin {address} asking to join the group')
+                
+                elif ptype == PacketType.GROUP_JOIN_ACK:
+                    mprint(f'Client {address} confirmed join group')
+
+                elif ptype == PacketType.GROUP_INFO:
+                    mprint(f'Client {address} rejected join group')
+                
             except socket.timeout:
                 pass
             except Exception as e:
