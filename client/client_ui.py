@@ -13,12 +13,11 @@ from functools import partial
 import os
 
 class ClientUI(tk.Tk):
-    def __init__(self, service_queue, device_manager: DeviceManager, group_manager: GroupManager):
+    def __init__(self, device_manager: DeviceManager, group_manager: GroupManager):
         super().__init__()
         self.title(self.get_title())
         self.geometry("800x600")
 
-        self.service_queue = service_queue
         self.device_manager = device_manager
         self.group_manager = group_manager
 

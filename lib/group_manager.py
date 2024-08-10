@@ -8,18 +8,17 @@ import threading
 import queue
 
 class GroupManager():
-    def __init__(self, service_queue: queue.Queue):
+    def __init__(self):
         self.groups: Group = []
-        self.service_queue = service_queue
     
     def add_group(self, name, desc, creator):
         group = Group(name, desc, creator)
         self.groups.append(group)
         mprint(f'New group {name} has been created')
-        self.service_queue.put({'type': EventType.GROUPS_UPDATED})
+        globals.service_queue.put({'type': EventType.GROUPS_UPDATED})
     
     def remove_group(self, name, creator):
         group = Group(name, creator)
         self.groups.remove(group)
         mprint(f'Group {name} has been removed')
-        self.service_queue.put({'type': EventType.GROUPS_UPDATED})
+        globals.service_queue.put({'type': EventType.GROUPS_UPDATED})

@@ -1,3 +1,4 @@
+import globals
 import tkinter as tk
 from functools import partial
 from models.event_type import EventType
@@ -61,14 +62,14 @@ def screen_my_network(self):
     update_devices(self)
     
     def handle_queue(self):
-        for i in range(self.service_queue.qsize()):
+        for i in range(globals.service_queue.qsize()):
             try:
-                data = self.service_queue.get(timeout=1)
+                data = globals.service_queue.get(timeout=1)
                 dtype = data.get('type')
                 if dtype == EventType.DEVICES_UPDATED:
                     update_devices(self)
                 else:
-                    self.service_queue.put(data)
+                    globals.service_queue.put(data)
             except queue.Empty:
                 pass
         self.after(1000, partial(handle_queue, self))

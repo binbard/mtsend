@@ -7,14 +7,13 @@ import threading
 import queue
 
 class DeviceManager():
-    def __init__(self, service_queue: queue.Queue):
+    def __init__(self):
         self.devices: dict[str, Device] = {}
-        self.service_queue = service_queue
     
     def add_device(self, ip, name, admin=False):
         if ip not in self.devices:
             mprint(f'New device {name} has joined')
-            self.service_queue.put({'type': EventType.DEVICES_UPDATED})
+            globals.service_queue.put({'type': EventType.DEVICES_UPDATED})
         if admin:
             self.devices[ip] = Device(ip, name, DeviceType.ADMIN, time.time())
         else:
@@ -22,7 +21,7 @@ class DeviceManager():
     
     def remove_device(self, ip: str):
         mprint(f'Device {self.devices[ip].name} has left')
-        self.service_queue.put({'type': EventType.DEVICES_UPDATED})
+        globals.service_queue.put({'type': EventType.DEVICES_UPDATED})
         del self.devices[ip]
     
     def is_empty(self):

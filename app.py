@@ -11,18 +11,17 @@ import queue
 
 class MtSendApplication():
     def __init__(self):
-        self.service_queue = queue.Queue()
-        self.group_manager = GroupManager(self.service_queue)
-        self.device_manager = DeviceManager(self.service_queue)
+        self.group_manager = GroupManager()
+        self.device_manager = DeviceManager()
         self.device_manager.start()
         
         self.main_socket = MainSocket(self.device_manager)
 
         self.app_ui: Tk = None
         if globals.DEVICE_TYPE == DeviceType.ADMIN:
-            self.app_ui = AdminUI(self.service_queue, self.device_manager, self.group_manager)
+            self.app_ui = AdminUI(self.device_manager, self.group_manager)
         else:
-            self.app_ui = ClientUI(self.service_queue, self.device_manager, self.group_manager)
+            self.app_ui = ClientUI(self.device_manager, self.group_manager)
 
         self.on = True
     

@@ -2,6 +2,7 @@ import os
 import logging
 from models.device_type import DeviceType
 import names
+from queue import Queue
 
 ### Constants
 
@@ -27,6 +28,8 @@ AUTHORS = [
     'Suryansh Bajpai',
     'Harshit Jawla',
 ]
+
+service_queue = Queue()
 
 home_directory = os.path.dirname(os.path.abspath(__file__))
 
