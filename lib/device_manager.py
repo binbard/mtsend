@@ -25,6 +25,9 @@ class DeviceManager():
         self.service_queue.put({'type': EventType.DEVICES_UPDATED})
         del self.devices[ip]
     
+    def is_empty(self):
+        return len(self.devices) == 0
+    
     def get_devices(self):
         return self.devices.values()
     
