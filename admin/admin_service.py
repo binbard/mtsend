@@ -15,6 +15,7 @@ import random
 import string
 import struct
 import os
+import math
 from typing import List
 
 def generate_password(length=12) -> str:
@@ -94,32 +95,37 @@ class AdminService:
 
         if message.type == "file":
             file: File = message.content
-            file_json = json.dumps(file.to_dict())
 
+            group.add_message(f"Sent <{file.name}>")
+            globals.service_queue.put({'type': EventType.GROUP_CHAT_UPDATED})
 
             file_size = os.path.getsize(file.path)
-            total_chunks = (file_size + (globals.GROUP_FILE_CHUNK_SIZE - 35) - 1) // (globals.GROUP_FILE_CHUNK_SIZE - 35)
-            file.size = file_size
+            total_chunks = math.ceil(file_size / globals.GROUP_FILE_CHUNK_SIZE)
 
-            self.main_socket.send(PacketType.GROUP_FILE_MESSAGE, file_json.encode(), (globals.MC_SEND_HOST, globals.MC_SEND_PORT))
+            file.size = file_size
+            file.total_chunks = total_chunks
+
+            file_json = json.dumps(file.to_dict())
+
+            self.group_send(group, PacketType.GROUP_FILE_MESSAGE, file_json.encode())
 
             file_name = file.name.encode('utf-8').ljust(30, b'\x00')
-
-            group.add_message(file.name)
-            globals.service_queue.put({'type': EventType.GROUP_CHAT_UPDATED})
 
             with open(file.path, 'rb') as f:
                 sent_chunks = 0
                 chunk = f.read(globals.GROUP_FILE_CHUNK_SIZE)
 
                 while chunk:
+                    sent_chunks += 1
+                    chunk = chunk.ljust(globals.GROUP_FILE_CHUNK_SIZE, b'\x00')
                     packet = struct.pack(globals.group_file_subfmt_str, file_name, sent_chunks, chunk)
                     self.group_send(group, PacketType.GROUP_FILE_CHUNK, packet)
-                    print(f'Sent chunk {sent_chunks+1}/{total_chunks}')
-                    sent_chunks += 1
+                    print(f'Sent chunk {sent_chunks}/{total_chunks} with size {len(chunk)}')
 
                     chunk = f.read(globals.GROUP_FILE_CHUNK_SIZE)
                 print(f'Sent {sent_chunks} chunks')
+            
+            self.group_send(group, PacketType.GROUP_FILE_SEND_COMPLETE, file_name)
 
         else:
             message_data = message.__dict__

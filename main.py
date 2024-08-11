@@ -10,6 +10,7 @@ def main():
     parser.add_argument('--recv', type=int, help='Listen on port')
     parser.add_argument('--send', type=int, help='Send to port')
     parser.add_argument('--name', type=str, help='Device name')
+    parser.add_argument('--headless', type=str, help='No GUI?')
     args = parser.parse_args()
     
     if args.type == 'server' or args.type == 'admin':
@@ -25,6 +26,9 @@ def main():
 
     if args.name:
         globals.DEVICE_NAME = args.name
+    
+    if args.headless:
+        globals.HEADLESS_MODE = True
     
     app = MtSendApplication()
     app.run()

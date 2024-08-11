@@ -1,4 +1,4 @@
-from globals import mpath
+from globals import mpath, data_path
 from typing import Dict
 import os
 
@@ -12,7 +12,19 @@ class File():
         self.path = ''
 
     def is_completed(self):
-        return len(self.data) == self.total_chunks or os.path.exists(self.path)
+        return len(self.data) >= self.total_chunks-1 or self.path != '' and os.path.exists(self.path)
+    
+    def save_file(self):
+        path = data_path(self.name)
+        if not self.is_completed():
+            return
+        with open(path, 'wb') as f:
+            for i in range(1, self.total_chunks + 1):
+                if i in self.data:
+                    f.write(self.data[i])
+
+    def get_left_chunks(self):
+        return [i for i in range(1, self.total_chunks + 1) if i not in self.data]
     
     def add_chunk(self, chunk_num: int, chunk_data: bytes):
         if chunk_num not in self.data:
@@ -34,6 +46,7 @@ class File():
     def from_dict(data: Dict):
         file = File(data['name'], data['type'], data['total_chunks'])
         file.path = data['path']
+        file.size = data['size']
         return file
     
     def to_dict(self):
@@ -41,5 +54,6 @@ class File():
             'name': self.name,
             'type': self.type,
             'total_chunks': self.total_chunks,
+            'size': self.size,
             'path': self.path
         }

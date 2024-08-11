@@ -72,7 +72,7 @@ class ClientUI(tk.Tk):
         self.quit()
 
     def about_action(self):
-        messagebox.showinfo("About", f"Solution made by: {", ".join(globals.AUTHORS)} for Tally CodeBrewers")
+        messagebox.showinfo("About", f"Solution made by: {', '.join(globals.AUTHORS)} for TCB")
 
     def you_action(self):
-        messagebox.showinfo("You", f"You are {globals.DEVICE_NAME} and your IP is {get_my_ip()}")
+        messagebox.showinfo("You", f"You are {globals.DEVICE_NAME} and your IP is {globals.MC_IP}")

@@ -4,7 +4,7 @@ from models.device_type import DeviceType
 import names
 from queue import Queue
 import importlib
-import helpers.db_helper as DbHelper
+from helpers.get_self_ip import get_my_ip
 
 ### Constants
 
@@ -17,10 +17,12 @@ DEVICE_TYPE = DeviceType.CLIENT
 
 DEVICE_NAME = None
 
+MC_IP = get_my_ip()
 MC_HOST = '224.0.0.2'
 MC_PORT = 8090
 
 TESTING_LOCAL = False
+HEADLESS_MODE = False
 
 MC_SEND_HOST = MC_HOST
 MC_SEND_PORT = MC_PORT
@@ -60,6 +62,7 @@ def temp_path(file_name):
 def data_path(file_name):
     return mpath(file_name, data_directory)
 
+import helpers.db_helper as DbHelper
 db_helper: DbHelper = importlib.import_module('helpers.db_helper')
 
 DEVICE_NAME = db_helper.get_devicename()

@@ -25,6 +25,10 @@ def show_chat(self, group_id):
     chat_history = group.messages
 
     for message in chat_history:
+        if type(message) is str:
+            message = {"type": "text", "content": message}
+            label = tk.Label(self.chat_display, text=message["content"], anchor='w', padx=10, pady=5, bg="white")
+            label.pack(fill=tk.X, pady=2)
         if message["type"] == "text":
             label = tk.Label(self.chat_display, text=message["content"], anchor='w', padx=10, pady=5, bg="white")
             label.pack(fill=tk.X, pady=2)

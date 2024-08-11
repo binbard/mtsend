@@ -14,6 +14,9 @@ import struct
 import time
 import json
 
+def fmt_size(bytes):
+    return f"{bytes / 1024:.2f} KB" if bytes < 1024 * 1024 else f"{bytes / (1024 * 1024):.2f} MB"
+
 class GroupSocket():
     def __init__(self, device_manager: DeviceManager, group_manager: GroupManager, group_id: str):
         self.device_manager = device_manager
@@ -24,7 +27,7 @@ class GroupSocket():
         self.group_id = group_id
         self.group: Group = self.group_manager.get_group(group_id)
 
-        self.sock.bind((get_my_ip(), self.group.port))
+        self.sock.bind((globals.MC_IP, self.group.port))
         
         self.sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         self.sock.setsockopt(socket.IPPROTO_IP, socket.IP_MULTICAST_TTL, 2)
@@ -53,6 +56,8 @@ class GroupSocket():
                 ptype = PacketType(packet_data[0])
                 pdata = packet_data[1].rstrip(b'\x00')
 
+                mprint(f'Packet received: {ptype.name}')
+
                 if ptype == PacketType.GROUP_LEAVE_REQ:
                     mprint(f'Admin {address} asking to leave the group')
                 
@@ -63,43 +68,61 @@ class GroupSocket():
                     mprint(f'Admin {address} asking to join the group')
                 
                 elif ptype == PacketType.GROUP_TEXT_MESSAGE:
-                    mprint(f'Admin {address} sending a text')
                     json_data = json.loads(pdata.decode('utf-8'))
                     self.group.add_message(json_data)
                     message: Message = Message(json_data['type'], json_data['content'])
-                    print(message.content)
+                    mprint(f'{self.group.name}: {message.content}')
                     globals.service_queue.put({'type': EventType.GROUP_CHAT_UPDATED})
                 
                 elif ptype == PacketType.GROUP_FILE_MESSAGE:
-                    json_data = json.loads(pdata.decode('utf-8'))
-                    file_data = json_data['content']
-                    file = File.from_dict(file_data)
-                    self.dfiles[file.name] = file
-                    self.group.add_message(file.name)
+                    file_json = json.loads(pdata.decode('utf-8'))
+                    file = File.from_dict(file_json)
+                    file_name = file.name[:30]
+                    self.dfiles[file_name] = file
+                    # self.group.add_message(f'Receiving <{file.name}> Size: {file.size} Chunks: {file.total_chunks}')
                     message: Message = Message(json_data['type'], json_data['content'])
+
                     globals.service_queue.put({'type': EventType.GROUP_CHAT_UPDATED})
-                    mprint(f'Admin {address} sending a file info')
+                    mprint(f'Admin {address} sending a file info {file_name}')
+
+                elif ptype == PacketType.GROUP_FILE_SEND_COMPLETE:
+                    file_name = pdata.decode('utf-8')
+                    file_name = file_name[:30]
+                    file = self.dfiles[file_name]
+                    if file is None:
+                        mprint(f'File {file_name} not found')
+                        continue
+                    if file.is_completed():
+                        mprint(f"Full file received: {file_name} Chunks received: {len(file.data)}/{file.total_chunks}")
+                        file.save_file()
+                        self.group.add_message(f'Received <{file.name}> Size: {fmt_size(file.size)}')
+                        message: Message = Message(json_data['type'], json_data['content'])
+                        globals.service_queue.put({'type': EventType.GROUP_CHAT_UPDATED})
+                        mprint(f'Admin {address} sending a file info {file_name}')
                 
                 elif ptype == PacketType.GROUP_FILE_CHUNK:
                     mprint(f'Admin {address} sent a file chunk')
+                    # mprint(f'Total chunk size: {len(pdata)}, expected: {struct.calcsize(globals.group_file_subfmt_str)}')
+                    pdata = pdata.ljust(globals.GROUP_FILE_TOTAL_SIZE - 1, b'\x00')
 
                     unpacked_data = struct.unpack(globals.group_file_subfmt_str, pdata)
                     file_name = unpacked_data[0].decode('utf-8').strip('\x00')
                     chunk_number = unpacked_data[1]
                     data = unpacked_data[2]
+                    mprint("lol", file_name, chunk_number)
                     file = self.dfiles[file_name]
                     if file is None:
                         mprint(f'File {file_name} not found')
                         continue
-                    print(f'Chunk {chunk_number} received')
+                    mprint(f'Chunk {chunk_number} received for {file_name} file')
+                    if chunk_number == file.total_chunks:
+                        data = data.rstrip(b'\x00')
                     file.add_chunk(chunk_number, data)
-                    if file.is_completed():
-                        print(f"Full file received: {file_name}")
                 
             except socket.timeout:
                 pass
             except Exception as e:
-                # mprint(f'Error: {e}')
+                mprint(f'Error: {e}')
                 pass
     
     def send(self, packet_type: PacketType, data: bytes, address = (globals.MC_SEND_HOST, globals.MC_SEND_PORT)):

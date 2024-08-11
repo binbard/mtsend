@@ -23,7 +23,7 @@ class GroupSocket():
         self.group: Group = self.group_manager.get_group(group_id)
 
         print("Binding TOOOO", self.group.port+1)
-        self.sock.bind((get_my_ip(), self.group.port+1))
+        self.sock.bind((globals.MC_IP, self.group.port+1))
         
         self.sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         self.sock.setsockopt(socket.IPPROTO_IP, socket.IP_MULTICAST_TTL, 2)

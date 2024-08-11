@@ -17,7 +17,7 @@ class MainSocket():
         self.device_manager = device_manager
         self.group_manager = group_manager
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        self.sock.bind((get_my_ip(), globals.MC_PORT))
+        self.sock.bind((globals.MC_IP, globals.MC_PORT))
         
         self.sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         self.sock.setsockopt(socket.IPPROTO_IP, socket.IP_MULTICAST_TTL, 2)
@@ -118,7 +118,7 @@ class MainSocket():
                     port = group_data['port']
                     participants = group_data['participants']
                     my_ip = get_my_ip()
-                    if my_ip in participants:
+                    if globals.MC_IP in participants:
                         self.get_group_info_from_admin(address[0], port)
                     else:
                         mprint('This group is not for me')
