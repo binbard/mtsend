@@ -59,6 +59,27 @@ class GroupSocket():
                 
                 elif ptype == PacketType.GROUP_FILE_CHUNK:
                     mprint(f'Client {address} sending a chunk not received')
+
+                elif ptype == PacketType.GROUP_FILE_CHUNKS_NOT_RECV:
+                    mprint(f'Client {address} did not receive some chunks')
+                    json_data = json.loads(pdata.decode('utf-8'))
+                    file_name = json_data['file_name']
+                    file_path = json_data['file_path']
+                    chunks_not_recv = json_data['chunks_not_recv']
+                    mprint(f'File: {file_name} Chunks not received: {chunks_not_recv}')
+
+                    file_name_bytes = file_name.encode('utf-8').ljust(30, b'\x00')
+
+                    with open(file_path, 'rb') as f:
+                        for chunk_num in chunks_not_recv:
+                            f.seek(globals.GROUP_FILE_CHUNK_SIZE * (chunk_num - 1))
+                            chunk = f.read(globals.GROUP_FILE_CHUNK_SIZE)
+                            packet = struct.pack(globals.group_file_subfmt_str, file_name_bytes, chunk_num, chunk)
+                            self.send_message(PacketType.GROUP_FILE_CHUNK, packet)
+                            mprint(f'Resent chunk {chunk_num} for file {file_name}')
+                    
+                    mprint(f'Resent {len(chunks_not_recv)} chunks')
+                    self.send_message(PacketType.GROUP_FILE_SEND_COMPLETE, file_name_bytes)
                 
             except socket.timeout:
                 pass
