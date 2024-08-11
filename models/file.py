@@ -7,6 +7,7 @@ class File():
         self.name = filename
         self.type = filetype
         self.total_chunks = total_chunks
+        self.size = 0
         self.data: Dict[int, bytes] = {}
         self.path = ''
 

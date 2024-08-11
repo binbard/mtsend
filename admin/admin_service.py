@@ -6,6 +6,7 @@ from models.packet_type import PacketType
 from admin.admin_group_socket import GroupSocket
 from models.message import Message
 from models.file import File
+from models.event_type import EventType
 import uuid
 import json
 import threading
@@ -13,6 +14,7 @@ import socket
 import random
 import string
 import struct
+import os
 from typing import List
 
 def generate_password(length=12) -> str:
@@ -94,29 +96,43 @@ class AdminService:
             file: File = message.content
             file_json = json.dumps(file.to_dict())
 
+
+            file_size = os.path.getsize(file.path)
+            total_chunks = (file_size + (globals.GROUP_FILE_CHUNK_SIZE - 35) - 1) // (globals.GROUP_FILE_CHUNK_SIZE - 35)
+            file.size = file_size
+
             self.main_socket.send(PacketType.GROUP_FILE_MESSAGE, file_json.encode(), (globals.MC_SEND_HOST, globals.MC_SEND_PORT))
 
+            file_name = file.name.encode('utf-8').ljust(30, b'\x00')
+
+            group.add_message(file.name)
+            globals.service_queue.put({'type': EventType.GROUP_CHAT_UPDATED})
+
             with open(file.path, 'rb') as f:
-                chunk = f.read(globals.GROUP_FILE_CHUNK_SIZE - 1)
                 sent_chunks = 0
+                chunk = f.read(globals.GROUP_FILE_CHUNK_SIZE)
+
                 while chunk:
+                    packet = struct.pack(globals.group_file_subfmt_str, file_name, sent_chunks, chunk)
+                    self.group_send(group, PacketType.GROUP_FILE_CHUNK, packet)
+                    print(f'Sent chunk {sent_chunks}/{total_chunks}')
                     sent_chunks += 1
-                    print(sent_chunks, file.total_chunks)
-                    self.group_send(group, PacketType.GROUP_FILE_CHUNK, chunk)
-                    chunk = f.read(globals.GROUP_FILE_CHUNK_SIZE - 1)
+
+                    chunk = f.read(globals.GROUP_FILE_CHUNK_SIZE)
+
         else:
             message_data = message.__dict__
             message_json = json.dumps(message_data)
             self.group_send(group, PacketType.GROUP_TEXT_MESSAGE, message_json.encode())
-
-        group.add_message(message_data)
+            group.add_message(message_data)
+            globals.service_queue.put({'type': EventType.GROUP_CHAT_UPDATED})
     
     def group_send(self, group: str, packet_type: PacketType, data: bytes):
         if group.sock is None or group.port is None:
             print(f"Group {group} is not connected")
             return
-        if len(data) > 1023:
-            raise ValueError('Data length is greater than 1023')
+        if len(data) > globals.GROUP_FILE_TOTAL_SIZE - 1:
+            raise ValueError(f'Data length is greater than {globals.GROUP_FILE_TOTAL_SIZE - 1}')
         
         address = (globals.MC_SEND_HOST, globals.MC_SEND_PORT)
         

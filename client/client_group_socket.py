@@ -46,7 +46,7 @@ class GroupSocket():
         mprint(f'Client Group Listening on PORT {self.group.port}')
         while True:
             try:
-                data, address = self.sock.recvfrom(globals.GROUP_FILE_CHUNK_SIZE)
+                data, address = self.sock.recvfrom(globals.GROUP_FILE_TOTAL_SIZE)
 
                 packet_data = struct.unpack(globals.group_fmt_str, data)
                 
@@ -77,11 +77,24 @@ class GroupSocket():
                     self.dfiles[file.name] = file
                     self.group.add_message(file.name)
                     message: Message = Message(json_data['type'], json_data['content'])
+                    globals.service_queue.put({'type': EventType.GROUP_CHAT_UPDATED})
                     mprint(f'Admin {address} sending a file info')
                 
                 elif ptype == PacketType.GROUP_FILE_CHUNK:
                     mprint(f'Admin {address} sent a file chunk')
 
+                    unpacked_data = struct.unpack(globals.group_file_subfmt_str, pdata)
+                    file_name = unpacked_data[0].decode('utf-8').strip('\x00')
+                    chunk_number = unpacked_data[1]
+                    data = unpacked_data[2]
+                    file = self.dfiles[file_name]
+                    if file is None:
+                        mprint(f'File {file_name} not found')
+                        continue
+                    print(f'Chunk {chunk_number} received')
+                    file.add_chunk(chunk_number, data)
+                    if file.is_completed():
+                        print(f"Full file received: {file_name}")
                 
             except socket.timeout:
                 pass
@@ -89,8 +102,8 @@ class GroupSocket():
                 mprint(f'Error: {e}')
     
     def send(self, packet_type: PacketType, data: bytes, address = (globals.MC_SEND_HOST, globals.MC_SEND_PORT)):
-        if len(data) > 1023:
-            raise ValueError('Data length is greater than 1MB')
+        if len(data) > globals.GROUP_FILE_TOTAL_SIZE - 1:
+            raise ValueError(f'Data length is greater than {globals.GROUP_FILE_TOTAL_SIZE - 1}')
         
         packet = struct.pack(globals.group_fmt_str, packet_type.value, data)
         self.sock.sendto(packet, address)
