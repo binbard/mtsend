@@ -17,7 +17,7 @@ class MainSocket():
         self.device_manager = device_manager
         self.group_manager = group_manager
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        self.sock.bind((globals.MC_IP, globals.MC_PORT))
+        self.sock.bind((globals.MC_IP_ADDR, globals.MC_PORT))
         
         self.sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         self.sock.setsockopt(socket.IPPROTO_IP, socket.IP_MULTICAST_TTL, 2)
@@ -39,7 +39,7 @@ class MainSocket():
             json_data = json.dumps({'name': globals.DEVICE_NAME, 'device_type': device_type})
             self.send(PacketType.ONLINE, json_data.encode(), (globals.MC_SEND_HOST, globals.MC_SEND_PORT))
             # mprint('Sent online packet')
-            time.sleep(10)
+            time.sleep(globals.DEVICE_ONLINE_TIMEOUT/2)
     
     def get_group_info_from_admin(self, host: str, port: int):
         def connect_and_receive(self, host, port):

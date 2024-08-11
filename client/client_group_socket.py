@@ -27,7 +27,7 @@ class GroupSocket():
         self.group_id = group_id
         self.group: Group = self.group_manager.get_group(group_id)
 
-        self.sock.bind((globals.MC_IP, self.group.port))
+        self.sock.bind((globals.MC_IP_ADDR, self.group.port))
         
         self.sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         self.sock.setsockopt(socket.IPPROTO_IP, socket.IP_MULTICAST_TTL, 2)
@@ -125,12 +125,15 @@ class GroupSocket():
                 mprint(f'Error: {e}')
                 pass
     
-    def send(self, packet_type: PacketType, data: bytes, address = (globals.MC_SEND_HOST, globals.MC_SEND_PORT)):
+    def send_message(self, packet_type: PacketType, data: bytes):
         if len(data) > globals.GROUP_FILE_TOTAL_SIZE - 1:
-            raise ValueError(f'Data length is greater than {globals.GROUP_FILE_TOTAL_SIZE - 1}')
+            raise ValueError(f'Data length is greater than {globals.GROUP_FILE_TOTAL_SIZE - 1} is {len(data)}')
+        if self.sock is None or self.group.port is None or self.group.port == 0:
+            print(f"Group {self.group.name} is not connected")
+            return
         
         packet = struct.pack(globals.group_fmt_str, packet_type.value, data)
-        self.sock.sendto(packet, address)
+        self.sock.sendto(packet, (globals.MC_SEND_HOST, self.group.port+1))
     
     def __del__(self):
         self.sock.close()

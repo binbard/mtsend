@@ -18,6 +18,7 @@ DEVICE_TYPE = DeviceType.CLIENT
 DEVICE_NAME = None
 
 MC_IP = get_my_ip()
+MC_IP_ADDR = MC_IP
 MC_HOST = '224.0.0.2'
 MC_PORT = 8090
 

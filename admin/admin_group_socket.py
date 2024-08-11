@@ -23,7 +23,7 @@ class GroupSocket():
         self.group: Group = self.group_manager.get_group(group_id)
 
         print("Binding TOOOO", self.group.port+1)
-        self.sock.bind((globals.MC_IP, self.group.port+1))
+        self.sock.bind((globals.MC_IP_ADDR, self.group.port+1))
         
         self.sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         self.sock.setsockopt(socket.IPPROTO_IP, socket.IP_MULTICAST_TTL, 2)
@@ -41,9 +41,9 @@ class GroupSocket():
         mprint(f'Admin Group Listen PORT {self.group.port}')
         while True:
             try:
-                data, address = self.sock.recvfrom(1024)
+                data, address = self.sock.recvfrom(globals.GROUP_FILE_TOTAL_SIZE)
 
-                packet_data = struct.unpack(globals.fmt_str, data)
+                packet_data = struct.unpack(globals.group_fmt_str, data)
                 
                 ptype = PacketType(packet_data[0])
                 pdata = packet_data[1].rstrip(b'\x00')
@@ -65,12 +65,15 @@ class GroupSocket():
             except Exception as e:
                 mprint(f'Error: {e}')
     
-    def send(self, packet_type: PacketType, data: bytes, address = (globals.MC_SEND_HOST, globals.MC_SEND_PORT)):
-        if len(data) > 1023:
-            raise ValueError('Data length is greater than 1023')
+    def send_message(self, packet_type: PacketType, data: bytes):
+        if len(data) > globals.GROUP_FILE_TOTAL_SIZE - 1:
+            raise ValueError(f'Data length is greater than {globals.GROUP_FILE_TOTAL_SIZE - 1} is {len(data)}')
+        if self.sock is None or self.group.port is None or self.group.port == 0:
+            print(f"Group {self.group.name} is not connected")
+            return
         
-        packet = struct.pack(globals.fmt_str, packet_type.value, data)
-        self.sock.sendto(packet, address)
+        packet = struct.pack(globals.group_fmt_str, packet_type.value, data)
+        self.sock.sendto(packet, (globals.MC_SEND_HOST, self.group.port))
     
     def __del__(self):
         self.sock.close()
