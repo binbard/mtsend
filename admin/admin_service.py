@@ -3,6 +3,8 @@ from lib.main_socket import MainSocket
 from lib.device_manager import DeviceManager
 from lib.group_manager import GroupManager
 from models.packet_type import PacketType
+from models.message import Message
+from models.file import File
 import uuid
 import json
 import threading
@@ -72,3 +74,44 @@ class AdminService:
         self.main_socket.send(PacketType.GROUP_JOIN_REQ, group_data_json.encode(), (globals.MC_SEND_HOST, globals.MC_SEND_PORT))
 
         return group
+    
+    def send_message(self, group_id: str, message: Message):
+        group = self.group_manager.get_group(group_id)
+        if group is None:
+            print(f"Group {group_id} does not exist")
+            return
+        if group.sock is None:
+            print(f"Group {group_id} is not connected")
+            return
+
+        message_data = message.__dict__
+        message_json = json.dumps(message_data)
+
+        if message.type == "file":
+            file: File = message.content
+            file_data = file.__dict__
+            file_json = json.dumps(file_data)
+
+            self.main_socket.send(PacketType.GROUP_FILE_MESSAGE, file_json.encode(), (globals.MC_SEND_HOST, globals.MC_SEND_PORT))
+
+            with open(file.path, 'rb') as f:
+                chunk = f.read(1023)
+                while chunk:
+                    self.group_send(group, PacketType.GROUP_FILE_CHUNK, chunk)
+                    chunk = f.read(1023)
+        else:
+            self.group_send(group, PacketType.GROUP_TEXT_MESSAGE, message_json.encode())
+
+        group.add_message(message_data)
+    
+    def group_send(self, group: str, packet_type: PacketType, data: bytes):
+        if group.sock is None or group.port is None:
+            print(f"Group {group} is not connected")
+            return
+        if len(data) > 1023:
+            raise ValueError('Data length is greater than 1023')
+        
+        address = (globals.MC_SEND_HOST, globals.MC_SEND_PORT)
+        
+        packet = struct.pack(globals.fmt_str, packet_type.value, data)
+        group.sock.sendto(packet, globals.MC_SEND_HOST, group.port)

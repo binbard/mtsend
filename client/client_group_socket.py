@@ -4,21 +4,28 @@ import socket
 import threading
 from models.packet_type import PacketType
 from lib.device_manager import DeviceManager
+from lib.group_manager import GroupManager
+from helpers.get_self_ip import get_my_ip
+from models.group import Group
 import struct
 import time
 import json
 
 class GroupSocket():
-    def __init__(self, device_manager: DeviceManager, group_host: str, group_port: str):
+    def __init__(self, device_manager: DeviceManager, group_manager: GroupManager, group_id: str):
         self.device_manager = device_manager
+        self.group_manager = group_manager
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        self.sock.bind(('0.0.0.0', group_port))
 
-        self.host = group_host
-        self.port = group_port
+        self.group_id = group_id
+        group: Group = self.group_manager.get_group_by_id(group_id)
+
+        self.sock.bind((get_my_ip(), group.port))
         
         self.sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         self.sock.setsockopt(socket.IPPROTO_IP, socket.IP_MULTICAST_TTL, 2)
+        if not globals.TESTING_LOCAL:
+            self.sock.setsockopt(socket.IPPROTO_IP, socket.IP_MULTICAST_LOOP, 0)
 
         mreq = struct.pack('4sl', socket.inet_aton(globals.MC_HOST), socket.INADDR_ANY)
         self.sock.setsockopt(socket.IPPROTO_IP, socket.IP_ADD_MEMBERSHIP, mreq)

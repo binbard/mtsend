@@ -5,6 +5,8 @@ from models.event_type import EventType
 import queue
 
 def screen_my_network(self):
+    self.current_screen = "my_network"
+
     for widget in self.main_frame.winfo_children():
         widget.destroy()
     
@@ -62,6 +64,8 @@ def screen_my_network(self):
     update_devices(self)
     
     def handle_queue(self):
+        if self.current_screen != "my_network":
+            return
         for i in range(globals.service_queue.qsize()):
             try:
                 data = globals.service_queue.get(timeout=1)

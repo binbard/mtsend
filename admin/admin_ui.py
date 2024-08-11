@@ -35,12 +35,26 @@ class AdminUI(tk.Tk):
         self.main_frame.pack(fill=tk.BOTH)
 
         self.create_toolbar()
+
+        self.current_screen = "my_network"
+        self.add_fake_groups()
         screen_my_network(self)
     
     def get_title(self, subtitle = ''):
         title = globals.APP_NAME + ' ' + 'Administrator'
         if subtitle == '': return title
         return title + ' - ' + subtitle
+    
+    def add_fake_groups(self):
+        my_ip = get_my_ip()
+        
+        self.admin_service.group_manager.add_group("1", "Group 1", my_ip).messages = [
+            {"type": "text", "content": "Welcome to Group 1!"},
+            {"type": "text", "content": "This is a test message."},
+            {"type": "file", "content": "hello.txt"}
+        ]
+        self.admin_service.group_manager.add_group("2", "Group 2", my_ip).messages = [{"type": "text", "content": "Group 2 chat history here."}]
+        self.admin_service.group_manager.add_group("3", "Group 3", my_ip).messages = [{"type": "text", "content": "Chat history for Group 3."}]
 
     def create_toolbar(self):
 

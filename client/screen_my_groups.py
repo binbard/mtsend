@@ -10,11 +10,13 @@ def open_file(file_name):
     if os.path.exists(file_path):
         os.startfile(file_path)
 
-def show_chat(self, group_name):
+def show_chat(self, group_id):
     for widget in self.chat_display.winfo_children():
         widget.destroy()
 
-    chat_history = self.group_chats.get(group_name, [])
+    group = self.client_service.group_manager.get_group(group_id)
+
+    chat_history = group.messages
     for message in chat_history:
         if message["type"] == "text":
             label = tk.Label(self.chat_display, text=message["content"], anchor='w', padx=10, pady=5, bg="white")
@@ -26,21 +28,22 @@ def show_chat(self, group_name):
             button.bind("<Button-1>", lambda e, f=file_name: open_file(f))
     
     for widget in self.names_frame.winfo_children():
-        if widget.cget("text") == group_name:
+        if widget.cget("text") == group.name:
             widget.config(bg="brown", fg="white")
             self.active_label = widget
-            # self.title_label.config(text=f"{group_name} Chat")
         else:
             widget.config(bg="lightgray", fg="black")
 
 def send_message(self):
     message = self.chat_entry.get()
     if message:
-        label = tk.Label(self.chat_display, text="You: " + message, anchor='w', padx=10, pady=5, bg="white")
+        label = tk.Label(self.chat_display, text=message, anchor='w', padx=10, pady=5, bg="white")
         label.pack(fill=tk.X, pady=2)
         self.chat_entry.delete(0, tk.END)
 
 def screen_my_groups(self):
+    self.current_screen = "my_groups"
+
     for widget in self.main_frame.winfo_children():
         widget.destroy()
 
@@ -65,33 +68,23 @@ def screen_my_groups(self):
 
     self.chat_display = tk.Frame(chat_frame)
     self.chat_display.pack(padx=10, pady=(0, 10), fill=tk.BOTH, expand=True)
-
-    self.group_chats = {
-        "Group 1": [
-            {"type": "text", "content": "Welcome to Group 1!"},
-            {"type": "text", "content": "This is a test message."},
-            {"type": "file", "content": "hello.txt"}
-        ],
-        "Group 2": [{"type": "text", "content": "Group 2 chat history here."}],
-        "Group 3": [{"type": "text", "content": "Chat history for Group 3."}]
-    }
-
+    
     def update_groups(self):
         for widget in self.names_frame.winfo_children():
             widget.destroy()
 
         groups = self.client_service.group_manager.groups
-        for group in groups:
-            self.group_chats[group.name] = group.messages
-            
-        for group_name in self.group_chats.keys():
-            label = tk.Label(self.names_frame, text=group_name, padx=10, pady=5, anchor='w', cursor="hand2", font=("Arial", 14), bg="lightgray")
-            label.pack(fill=tk.X)
-            label.bind("<Button-1>", lambda event, g=group_name: partial(show_chat, self)(g))
         
+        for group in groups:
+            label = tk.Label(self.names_frame, text=group.name, padx=10, pady=5, anchor='w', cursor="hand2", font=("Arial", 14), bg="lightgray")
+            label.pack(fill=tk.X)
+            label.bind("<Button-1>", lambda event, g=group.id: partial(show_chat, self)(g))
+    
     update_groups(self)
 
     def handle_queue(self):
+        if self.current_screen != "my_groups":
+            return
         for i in range(globals.service_queue.qsize()):
             try:
                 data = globals.service_queue.get(timeout=1)

@@ -12,6 +12,7 @@ class Group():
         self.admins = []
         self.participants = participants
         self.messages = []
+        self.sock = None
 
     def add_participant(self, participant):
         if participant not in self.participants:
