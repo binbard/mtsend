@@ -6,6 +6,7 @@ from models.packet_type import PacketType
 from lib.device_manager import DeviceManager
 from lib.group_manager import GroupManager
 from models.device import DeviceType
+from client.client_group_socket import GroupSocket
 from helpers.get_self_ip import get_my_ip
 import struct
 import time
@@ -67,7 +68,11 @@ class MainSocket():
                             print(f"Creator: {creator}")
                             print(f"Participants: {participants}")
                             print(f"Port: {port}")
-                            self.group_manager.add_group(group_id, group_name, creator, participants, port)
+                            group = self.group_manager.add_group(group_id, group_name, creator, participants, port)
+                            print(f"Group {group_name} added to group manager")
+                            group_socket = GroupSocket(self.device_manager, self.group_manager, group_id)
+                            group.sock = group_socket.sock
+                            group_socket.start()
                     else:
                         print("No data received from the server.")
             except socket.timeout:
