@@ -2,6 +2,7 @@ import globals
 import tkinter as tk
 from functools import partial
 from models.event_type import EventType
+from models.message import Message
 import os
 import queue
 
@@ -35,11 +36,15 @@ def show_chat(self, group_id):
             widget.config(bg="lightgray", fg="black")
 
 def send_message(self):
-    message = self.chat_entry.get()
-    if message:
-        label = tk.Label(self.chat_display, text=message, anchor='w', padx=10, pady=5, bg="white")
+    if self.current_group_id is None:
+        return
+    msg = self.chat_entry.get()
+    if msg:
+        label = tk.Label(self.chat_display, text=msg, anchor='w', padx=10, pady=5, bg="white")
         label.pack(fill=tk.X, pady=2)
         self.chat_entry.delete(0, tk.END)
+        message: Message = Message("text", msg)
+        self.admin_service.send_message(self.current_group_id, message)
 
 def screen_my_groups(self):
     self.current_screen = "my_groups"

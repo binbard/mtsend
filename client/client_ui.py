@@ -29,6 +29,7 @@ class ClientUI(tk.Tk):
         self.main_frame = tk.Frame(self)
         self.main_frame.pack(fill=tk.BOTH)
 
+        self.current_screen = "my_network"
         self.create_toolbar()
         self.add_fake_groups()
         screen_my_network(self)

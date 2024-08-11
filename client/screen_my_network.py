@@ -56,6 +56,8 @@ def screen_my_network(self):
         
             
         def handle_queue(self):
+            if self.current_screen != "my_network":
+                return
             for i in range(globals.service_queue.qsize()):
                 try:
                     data = globals.service_queue.get(timeout=1)

@@ -18,8 +18,13 @@ def screen_my_network(self):
     self.devices_frame = None
     self.check_vars = []
     self.device_labels = []
+
+    self.group_display_frame = tk.Frame(self.main_frame)
+    self.group_display_frame.pack(pady=20, fill=tk.X)
     
     def update_devices(self):
+        if self.current_screen != "my_network":
+            return
         if self.devices_frame is None:
             self.devices_frame = tk.Frame(self.main_frame)
             self.devices_frame.pack(fill=tk.BOTH, expand=True)
@@ -107,23 +112,18 @@ def screen_my_network(self):
 
         tk.Button(group_popup, text="Confirm", command=confirm_group).pack(padx=10, pady=10)
 
-    tk.Button(self.devices_frame, text="Add Group", command=add_group).pack(pady=20)
-
-    self.group_display_frame = tk.Frame(self.main_frame)
-    self.group_display_frame.pack(pady=20, fill=tk.X)
+    tk.Button(self.main_frame, text="Add Group", command=add_group).pack(pady=20)
 
     def display_group_info(group_name, selected_devices):
         for widget in self.group_display_frame.winfo_children():
             widget.destroy()
-        group_frame = tk.Frame(self.group_display_frame)
-        group_frame.pack(fill=tk.X, pady=10)
 
-        group_label = tk.Label(group_frame, text=f"Group Name: {group_name}", font=('bold', 12))
+        group_label = tk.Label(self.group_display_frame, text=f"Group Name: {group_name}", font=('bold', 12))
         group_label.pack(pady=5)
 
-        devices_label = tk.Label(group_frame, text="Selected Devices:", font=('bold', 10))
+        devices_label = tk.Label(self.group_display_frame, text="Selected Devices:", font=('bold', 10))
         devices_label.pack(pady=5)
 
         devices_text = "\n".join(selected_devices)
-        devices_list_label = tk.Label(group_frame, text=devices_text)
+        devices_list_label = tk.Label(self.group_display_frame, text=devices_text)
         devices_list_label.pack(pady=5)

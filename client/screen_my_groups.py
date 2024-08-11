@@ -15,8 +15,8 @@ def show_chat(self, group_id):
         widget.destroy()
 
     group = self.client_service.group_manager.get_group(group_id)
-
     chat_history = group.messages
+
     for message in chat_history:
         if message["type"] == "text":
             label = tk.Label(self.chat_display, text=message["content"], anchor='w', padx=10, pady=5, bg="white")
@@ -43,7 +43,6 @@ def send_message(self):
 
 def screen_my_groups(self):
     self.current_screen = "my_groups"
-
     for widget in self.main_frame.winfo_children():
         widget.destroy()
 
@@ -51,50 +50,54 @@ def screen_my_groups(self):
     
     header_frame = tk.Frame(self.main_frame)
     header_frame.pack(padx=40, pady=(20, 10), fill=tk.X)
-
     tk.Label(header_frame, text="Groups List", bg="brown", fg="white", font=("Georgia", 12)).pack()
 
-    groups_frame = tk.Frame(self.main_frame)
-    groups_frame.pack(padx=40, pady=10, fill=tk.BOTH, expand=True)
+    self.groups_frame = tk.Frame(self.main_frame)
+    self.groups_frame.pack(padx=40, pady=10, fill=tk.BOTH, expand=True)
 
-    self.names_frame = tk.Frame(groups_frame)
+    self.names_frame = tk.Frame(self.groups_frame)
     self.names_frame.pack(side=tk.LEFT, fill=tk.Y, padx=(0, 10))
 
-    chat_frame = tk.Frame(groups_frame)
+    chat_frame = tk.Frame(self.groups_frame)
     chat_frame.pack(side=tk.RIGHT, fill=tk.BOTH, expand=True)
 
-    separator = tk.Frame(groups_frame, height=2, bg="gray")
+    separator = tk.Frame(self.groups_frame, height=2, bg="gray")
     separator.pack(side=tk.LEFT, fill=tk.X, padx=(0, 10))
 
     self.chat_display = tk.Frame(chat_frame)
     self.chat_display.pack(padx=10, pady=(0, 10), fill=tk.BOTH, expand=True)
+
+    update_groups(self)
+    handle_queue(self)
+
+def update_groups(self):
+    if self.current_screen != "my_groups":
+        return
     
-    def update_groups(self):
+    if self.names_frame:
         for widget in self.names_frame.winfo_children():
             widget.destroy()
 
-        groups = self.client_service.group_manager.groups
-        
-        for group in groups:
-            label = tk.Label(self.names_frame, text=group.name, padx=10, pady=5, anchor='w', cursor="hand2", font=("Arial", 14), bg="lightgray")
-            label.pack(fill=tk.X)
-            label.bind("<Button-1>", lambda event, g=group.id: partial(show_chat, self)(g))
+    groups = self.client_service.group_manager.groups
     
-    update_groups(self)
+    for group in groups:
+        label = tk.Label(self.names_frame, text=group.name, padx=10, pady=5, anchor='w', cursor="hand2", font=("Arial", 14), bg="lightgray")
+        label.pack(fill=tk.X)
+        label.bind("<Button-1>", lambda event, g=group.id: show_chat(self, g))
 
-    def handle_queue(self):
-        if self.current_screen != "my_groups":
-            return
-        for i in range(globals.service_queue.qsize()):
-            try:
-                data = globals.service_queue.get(timeout=1)
-                dtype = data.get('type')
-                if dtype == EventType.GROUPS_UPDATED:
-                    update_groups(self)
-                else:
-                    globals.service_queue.put(data)
-            except queue.Empty:
-                pass
-        self.after(1000, partial(handle_queue, self))
-
+def handle_queue(self):
+    if self.current_screen != "my_groups":
+        return
+    
+    for _ in range(globals.service_queue.qsize()):
+        try:
+            data = globals.service_queue.get(timeout=1)
+            dtype = data.get('type')
+            if dtype == EventType.GROUPS_UPDATED:
+                update_groups(self)
+            else:
+                globals.service_queue.put(data)
+        except queue.Empty:
+            pass
+    
     self.after(1000, partial(handle_queue, self))

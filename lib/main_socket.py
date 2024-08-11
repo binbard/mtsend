@@ -100,7 +100,6 @@ class MainSocket():
                     json_data = json.loads(pdata.decode('utf-8'))
                     name = json_data['name'] if 'name' in json_data else 'Unknown'
                     device_type = DeviceType.ADMIN if json_data['device_type'] == 'ADMIN' else DeviceType.CLIENT
-                    print(json_data['device_type'])
                     self.device_manager.device_updater(address[0], name, device_type)
 
                 elif ptype == PacketType.OFFLINE:
