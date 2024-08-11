@@ -23,7 +23,11 @@ def show_chat(self, group_id):
 
     chat_history = group.messages
     for message in chat_history:
-        if message["type"] == "text":
+        if type(message) is str:
+            message = {"type": "text", "content": message}
+            label = tk.Label(self.chat_display, text=message["content"], anchor='w', padx=10, pady=5, bg="white")
+            label.pack(fill=tk.X, pady=2)
+        elif message["type"] == "text":
             label = tk.Label(self.chat_display, text=message["content"], anchor='w', padx=10, pady=5, bg="white")
             label.pack(fill=tk.X, pady=2)
         elif message["type"] == "file":
@@ -76,7 +80,7 @@ def send_file(self):
     message = Message("file", file)
     self.admin_service.send_message(self.current_group_id, message)
     
-    self.show_chat(self.current_group_id)
+    show_chat(self, self.current_group_id)
     self.selected_file_label.config(text="No file selected")
     del self.selected_file_path
 

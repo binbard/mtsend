@@ -99,7 +99,8 @@ class GroupSocket():
             except socket.timeout:
                 pass
             except Exception as e:
-                mprint(f'Error: {e}')
+                # mprint(f'Error: {e}')
+                pass
     
     def send(self, packet_type: PacketType, data: bytes, address = (globals.MC_SEND_HOST, globals.MC_SEND_PORT)):
         if len(data) > globals.GROUP_FILE_TOTAL_SIZE - 1:

@@ -17,12 +17,6 @@ class File():
     def add_chunk(self, chunk_num: int, chunk_data: bytes):
         if chunk_num not in self.data:
             self.data[chunk_num] = chunk_data
-        # if self.is_completed():
-        #     self.path = mpath(self.name)
-        #     with open(self.path, 'wb') as f:
-        #         for i in range(self.total_chunks):
-        #             f.write(self.data[i])
-        #     self.data = {}
 
     def get_download_progress(self):
         return self.total_chunks / len(self.data)

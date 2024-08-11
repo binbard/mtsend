@@ -28,9 +28,9 @@ MC_SEND_PORT = MC_PORT
 fmt_str = 'B1023s'
 
 GROUP_FILE_TOTAL_SIZE = 10240
-GROUP_FILE_CHUNK_SIZE = 10204
+GROUP_FILE_CHUNK_SIZE = 10203
 group_fmt_str = f"B{GROUP_FILE_TOTAL_SIZE - 1}s"
-group_file_subfmt_str = "30sI10204s"
+group_file_subfmt_str = "30sI10203s"
 
 AUTHORS = [
     'Gaurav Singh Mehra',

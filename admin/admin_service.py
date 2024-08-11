@@ -115,10 +115,11 @@ class AdminService:
                 while chunk:
                     packet = struct.pack(globals.group_file_subfmt_str, file_name, sent_chunks, chunk)
                     self.group_send(group, PacketType.GROUP_FILE_CHUNK, packet)
-                    print(f'Sent chunk {sent_chunks}/{total_chunks}')
+                    print(f'Sent chunk {sent_chunks+1}/{total_chunks}')
                     sent_chunks += 1
 
                     chunk = f.read(globals.GROUP_FILE_CHUNK_SIZE)
+                print(f'Sent {sent_chunks} chunks')
 
         else:
             message_data = message.__dict__
@@ -132,7 +133,7 @@ class AdminService:
             print(f"Group {group} is not connected")
             return
         if len(data) > globals.GROUP_FILE_TOTAL_SIZE - 1:
-            raise ValueError(f'Data length is greater than {globals.GROUP_FILE_TOTAL_SIZE - 1}')
+            raise ValueError(f'Data length is greater than {globals.GROUP_FILE_TOTAL_SIZE - 1} is {len(data)}')
         
         address = (globals.MC_SEND_HOST, globals.MC_SEND_PORT)
         

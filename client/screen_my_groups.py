@@ -20,6 +20,8 @@ def show_chat(self, group_id):
         widget.destroy()    
 
     group = self.client_service.group_manager.get_group(group_id)
+    if not group:
+        return
     chat_history = group.messages
 
     for message in chat_history:
