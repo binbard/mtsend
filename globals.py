@@ -27,6 +27,9 @@ MC_SEND_PORT = MC_PORT
 
 fmt_str = 'B1023s'
 
+GROUP_FILE_CHUNK_SIZE = 10240
+group_fmt_str = f"B{GROUP_FILE_CHUNK_SIZE - 1}s"
+
 AUTHORS = [
     'Gaurav Singh Mehra',
     'Suryansh Bajpai',

@@ -17,6 +17,8 @@ class GroupSocket():
         self.group_manager = group_manager
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 
+        self.sock.setsockopt(socket.SOL_SOCKET, socket.SO_RCVBUF, 65536)
+
         self.group_id = group_id
         self.group: Group = self.group_manager.get_group(group_id)
 

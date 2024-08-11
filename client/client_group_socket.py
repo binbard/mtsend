@@ -6,6 +6,7 @@ from models.packet_type import PacketType
 from lib.device_manager import DeviceManager
 from lib.group_manager import GroupManager
 from models.message import Message
+from models.file import File
 from models.event_type import EventType
 from helpers.get_self_ip import get_my_ip
 from models.group import Group
@@ -18,6 +19,7 @@ class GroupSocket():
         self.device_manager = device_manager
         self.group_manager = group_manager
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        self.sock.setsockopt(socket.SOL_SOCKET, socket.SO_RCVBUF, globals.GROUP_FILE_CHUNK_SIZE)
 
         self.group_id = group_id
         self.group: Group = self.group_manager.get_group(group_id)
@@ -32,6 +34,10 @@ class GroupSocket():
         mreq = struct.pack('4sl', socket.inet_aton(globals.MC_HOST), socket.INADDR_ANY)
         self.sock.setsockopt(socket.IPPROTO_IP, socket.IP_ADD_MEMBERSHIP, mreq)
         self.sock.settimeout(1)
+
+        self.dfiles = {
+            'none.txt': File('none.txt', 'txt', 0)
+        }
     
     def start(self):
         threading.Thread(target=self.listen, daemon=True).start()
@@ -40,9 +46,9 @@ class GroupSocket():
         mprint(f'Client Group Listening on PORT {self.group.port}')
         while True:
             try:
-                data, address = self.sock.recvfrom(1024)
+                data, address = self.sock.recvfrom(globals.GROUP_FILE_CHUNK_SIZE)
 
-                packet_data = struct.unpack(globals.fmt_str, data)
+                packet_data = struct.unpack(globals.group_fmt_str, data)
                 
                 ptype = PacketType(packet_data[0])
                 pdata = packet_data[1].rstrip(b'\x00')
@@ -65,10 +71,17 @@ class GroupSocket():
                     globals.service_queue.put({'type': EventType.GROUP_CHAT_UPDATED})
                 
                 elif ptype == PacketType.GROUP_FILE_MESSAGE:
+                    json_data = json.loads(pdata.decode('utf-8'))
+                    file_data = json_data['content']
+                    file = File.from_dict(file_data)
+                    self.dfiles[file.name] = file
+                    self.group.add_message(file.name)
+                    message: Message = Message(json_data['type'], json_data['content'])
                     mprint(f'Admin {address} sending a file info')
                 
                 elif ptype == PacketType.GROUP_FILE_CHUNK:
                     mprint(f'Admin {address} sent a file chunk')
+
                 
             except socket.timeout:
                 pass
@@ -77,9 +90,9 @@ class GroupSocket():
     
     def send(self, packet_type: PacketType, data: bytes, address = (globals.MC_SEND_HOST, globals.MC_SEND_PORT)):
         if len(data) > 1023:
-            raise ValueError('Data length is greater than 1023')
+            raise ValueError('Data length is greater than 1MB')
         
-        packet = struct.pack(globals.fmt_str, packet_type.value, data)
+        packet = struct.pack(globals.group_fmt_str, packet_type.value, data)
         self.sock.sendto(packet, address)
     
     def __del__(self):

@@ -3,6 +3,8 @@ import tkinter as tk
 from functools import partial
 from models.event_type import EventType
 from models.message import Message
+from models.file import File
+from tkinter import filedialog
 import os
 import queue
 
@@ -41,12 +43,43 @@ def send_message(self):
     if self.current_group_id is None:
         return
     msg = self.chat_entry.get()
+    if not msg or msg.isspace():
+        send_file(self)
     if msg:
         label = tk.Label(self.chat_display, text=msg, anchor='w', padx=10, pady=5, bg="white")
         label.pack(fill=tk.X, pady=2)
         self.chat_entry.delete(0, tk.END)
         message: Message = Message("text", msg)
         self.admin_service.send_message(self.current_group_id, message)
+
+def choose_file(self):
+    self.selected_file_path = filedialog.askopenfilename()
+    if self.selected_file_path:
+        file_name = os.path.basename(self.selected_file_path)
+        self.selected_file_label.config(text=f"Selected File: {file_name}")
+    else:
+        self.selected_file_label.config(text="No file selected")
+
+def send_file(self):
+    if self.current_group_id is None or not hasattr(self, 'selected_file_path'):
+        return
+    
+    file_path = self.selected_file_path
+    file_name = os.path.basename(file_path)
+    file_size = os.path.getsize(file_path)
+    chunk_size = globals.GROUP_FILE_CHUNK_SIZE - 1
+    total_chunks = file_size // chunk_size + 1
+
+    file = File(file_name, file_name.split('.')[-1], total_chunks)
+    file.path = file_path
+    
+    message = Message("file", file)
+    self.admin_service.send_message(self.current_group_id, message)
+    
+    self.show_chat(self.current_group_id)
+    self.selected_file_label.config(text="No file selected")
+    del self.selected_file_path
+
 
 def screen_my_groups(self):
     self.current_screen = "my_groups"
@@ -87,6 +120,12 @@ def screen_my_groups(self):
     send_button = tk.Button(chat_input_frame, text="Send", font=("Arial", 12), command=partial(send_message, self))
     send_button.pack(side=tk.RIGHT, padx=10, pady=5)
     
+    choose_file_button = tk.Button(chat_input_frame, text="Choose File", font=("Arial", 12), command=partial(choose_file, self))
+    choose_file_button.pack(side=tk.RIGHT, padx=10, pady=5)
+    
+    self.selected_file_label = tk.Label(chat_input_frame, text="No file selected", font=("Arial", 12), fg="gray")
+    self.selected_file_label.pack(side=tk.LEFT, padx=10, pady=5)
+
     def update_groups(self):
         for widget in self.names_frame.winfo_children():
             widget.destroy()

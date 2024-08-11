@@ -90,22 +90,23 @@ class AdminService:
             print(f"Group {group_id} is not connected")
             return
 
-        message_data = message.__dict__
-        message_json = json.dumps(message_data)
-
         if message.type == "file":
             file: File = message.content
-            file_data = file.__dict__
-            file_json = json.dumps(file_data)
+            file_json = json.dumps(file.to_dict())
 
             self.main_socket.send(PacketType.GROUP_FILE_MESSAGE, file_json.encode(), (globals.MC_SEND_HOST, globals.MC_SEND_PORT))
 
             with open(file.path, 'rb') as f:
-                chunk = f.read(1023)
+                chunk = f.read(globals.GROUP_FILE_CHUNK_SIZE - 1)
+                sent_chunks = 0
                 while chunk:
+                    sent_chunks += 1
+                    print(sent_chunks, file.total_chunks)
                     self.group_send(group, PacketType.GROUP_FILE_CHUNK, chunk)
-                    chunk = f.read(1023)
+                    chunk = f.read(globals.GROUP_FILE_CHUNK_SIZE - 1)
         else:
+            message_data = message.__dict__
+            message_json = json.dumps(message_data)
             self.group_send(group, PacketType.GROUP_TEXT_MESSAGE, message_json.encode())
 
         group.add_message(message_data)
@@ -119,6 +120,6 @@ class AdminService:
         
         address = (globals.MC_SEND_HOST, globals.MC_SEND_PORT)
         
-        packet = struct.pack(globals.fmt_str, packet_type.value, data)
+        packet = struct.pack(globals.group_fmt_str, packet_type.value, data)
         print(f"Group Sending {packet_type.name} to {group.name}")
         group.sock.sendto(packet, (globals.MC_SEND_HOST, int(group.port)))
