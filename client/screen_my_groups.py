@@ -14,8 +14,10 @@ def show_chat(self, group_id):
     if not self.chat_display:
         return
     
+    self.current_group_id = group_id
+    
     for widget in self.chat_display.winfo_children():
-        widget.destroy()
+        widget.destroy()    
 
     group = self.client_service.group_manager.get_group(group_id)
     chat_history = group.messages
@@ -49,6 +51,8 @@ def screen_my_groups(self):
     self.current_screen = "my_groups"
     for widget in self.main_frame.winfo_children():
         widget.destroy()
+    
+    self.current_group_id = None
 
     self.title(self.get_title('My Groups'))
     
@@ -99,6 +103,9 @@ def handle_queue(self):
             dtype = data.get('type')
             if dtype == EventType.GROUPS_UPDATED:
                 update_groups(self)
+            elif dtype == EventType.GROUP_CHAT_UPDATED:
+                print("Chat updated")
+                show_chat(self, self.current_group_id)
             else:
                 globals.service_queue.put(data)
         except queue.Empty:

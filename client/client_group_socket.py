@@ -5,6 +5,8 @@ import threading
 from models.packet_type import PacketType
 from lib.device_manager import DeviceManager
 from lib.group_manager import GroupManager
+from models.message import Message
+from models.event_type import EventType
 from helpers.get_self_ip import get_my_ip
 from models.group import Group
 import struct
@@ -56,6 +58,11 @@ class GroupSocket():
                 
                 elif ptype == PacketType.GROUP_TEXT_MESSAGE:
                     mprint(f'Admin {address} sending a text')
+                    json_data = json.loads(pdata.decode('utf-8'))
+                    self.group.add_message(json_data)
+                    message: Message = Message(json_data['type'], json_data['content'])
+                    print(message.content)
+                    globals.service_queue.put({'type': EventType.GROUP_CHAT_UPDATED})
                 
                 elif ptype == PacketType.GROUP_FILE_MESSAGE:
                     mprint(f'Admin {address} sending a file info')
