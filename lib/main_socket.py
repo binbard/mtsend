@@ -5,6 +5,7 @@ import threading
 from models.packet_type import PacketType
 from lib.device_manager import DeviceManager
 from lib.group_manager import GroupManager
+from models.device import DeviceType
 from helpers.get_self_ip import get_my_ip
 import struct
 import time
@@ -33,7 +34,8 @@ class MainSocket():
     def online_teller(self):
         mprint('Online teller started')
         while True:
-            json_data = json.dumps({'name': globals.DEVICE_NAME})
+            device_type = globals.DEVICE_TYPE.name
+            json_data = json.dumps({'name': globals.DEVICE_NAME, 'device_type': device_type})
             self.send(PacketType.ONLINE, json_data.encode(), (globals.MC_SEND_HOST, globals.MC_SEND_PORT))
             # mprint('Sent online packet')
             time.sleep(10)
@@ -97,7 +99,9 @@ class MainSocket():
                 if ptype == PacketType.ONLINE:
                     json_data = json.loads(pdata.decode('utf-8'))
                     name = json_data['name'] if 'name' in json_data else 'Unknown'
-                    self.device_manager.device_updater(address[0], name)
+                    device_type = DeviceType.ADMIN if json_data['device_type'] == 'ADMIN' else DeviceType.CLIENT
+                    print(json_data['device_type'])
+                    self.device_manager.device_updater(address[0], name, device_type)
 
                 elif ptype == PacketType.OFFLINE:
                     json_data = json.loads(pdata.decode('utf-8'))

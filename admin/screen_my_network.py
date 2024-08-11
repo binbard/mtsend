@@ -2,6 +2,7 @@ import globals
 import tkinter as tk
 from functools import partial
 from models.event_type import EventType
+from models.device import DeviceType
 import queue
 
 def screen_my_network(self):
@@ -31,6 +32,9 @@ def screen_my_network(self):
             return
         
         devices = self.admin_service.device_manager.get_devices()
+
+        for widget in self.group_display_frame.winfo_children():
+            widget.destroy()
         
         headers = ["IP", "Name", "Type", "Online"]
         header_frame = tk.Frame(self.devices_frame)
@@ -46,7 +50,7 @@ def screen_my_network(self):
         for row, device in enumerate(devices):
             ip_label = tk.Label(device_frame, text=device.ip)
             name_label = tk.Label(device_frame, text=device.name)
-            type_label = tk.Label(device_frame, text='Client')
+            type_label = tk.Label(device_frame, text=str(device.type.name).title())
             online_label = tk.Label(device_frame, text="Online" if device.last_seen else "Offline")
 
             ip_label.pack(side=tk.LEFT, padx=5, pady=5)
@@ -103,12 +107,14 @@ def screen_my_network(self):
 
         tk.Button(group_popup, text="Confirm", command=confirm_group).pack(padx=10, pady=10)
 
-    tk.Button(self.main_frame, text="Add Group", command=add_group).pack(pady=20)
+    tk.Button(self.devices_frame, text="Add Group", command=add_group).pack(pady=20)
 
     self.group_display_frame = tk.Frame(self.main_frame)
     self.group_display_frame.pack(pady=20, fill=tk.X)
 
     def display_group_info(group_name, selected_devices):
+        for widget in self.group_display_frame.winfo_children():
+            widget.destroy()
         group_frame = tk.Frame(self.group_display_frame)
         group_frame.pack(fill=tk.X, pady=10)
 

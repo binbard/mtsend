@@ -2,6 +2,7 @@ import globals
 from globals import mprint
 from models.device import Device, DeviceType
 from models.event_type import EventType
+from models.device import DeviceType
 import time
 import threading
 import queue
@@ -10,11 +11,11 @@ class DeviceManager():
     def __init__(self):
         self.devices: dict[str, Device] = {}
     
-    def add_device(self, ip, name, admin=False):
+    def add_device(self, ip, name, device_type: DeviceType):
         if ip not in self.devices:
             mprint(f'New device {name} has joined')
             globals.service_queue.put({'type': EventType.DEVICES_UPDATED})
-        if admin:
+        if device_type == DeviceType.ADMIN:
             self.devices[ip] = Device(ip, name, DeviceType.ADMIN, time.time())
         else:
             self.devices[ip] = Device(ip, name, DeviceType.CLIENT, time.time())
@@ -30,12 +31,13 @@ class DeviceManager():
     def get_devices(self):
         return self.devices.values()
     
-    def device_updater(self, ip, name):
+    def device_updater(self, ip, name, device_type: DeviceType):
         if ip in self.devices:
             self.devices[ip].name = name
             self.devices[ip].last_seen = time.time()
+            self.devices[ip].type = device_type
         else:
-            self.add_device(ip, name)
+            self.add_device(ip, name, device_type)
     
     def device_remove_listener(self):
         while True:

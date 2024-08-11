@@ -1,3 +1,4 @@
+import globals
 import tkinter as tk
 from functools import partial
 from tkinter import messagebox
@@ -59,6 +60,8 @@ def remove_selected_users(self, group_name):
         show_group_details(self, group_name)
 
 def screen_manage_group(self):
+    self.current_screen = "manage_group"
+    
     self.details_frame = tk.Frame(self.main_frame)
     self.details_frame.pack(side=tk.RIGHT, fill=tk.BOTH, expand=True)
 
@@ -120,6 +123,8 @@ def screen_manage_group(self):
     update_managed_groups(self)
 
     def handle_queue(self):
+        if self.current_screen != "manage_group":
+            return
         for i in range(globals.service_queue.qsize()):
             try:
                 data = globals.service_queue.get(timeout=1)

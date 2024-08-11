@@ -2,6 +2,7 @@ import globals
 import tkinter as tk
 from functools import partial
 from models.event_type import EventType
+from models.device import DeviceType
 import queue
 
 def screen_my_network(self):
@@ -42,7 +43,7 @@ def screen_my_network(self):
             for row, device in enumerate(devices):
                 ip_label = tk.Label(device_frame, text=device.ip)
                 name_label = tk.Label(device_frame, text=device.name)
-                type_label = tk.Label(device_frame, text='Client')
+                type_label = tk.Label(device_frame, text=str(device.type.name).title())
                 online_label = tk.Label(device_frame, text="Online" if device.last_seen else "Offline")
 
                 ip_label.pack(side=tk.LEFT, padx=5, pady=5)
