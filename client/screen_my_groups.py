@@ -11,6 +11,9 @@ def open_file(file_name):
         os.startfile(file_path)
 
 def show_chat(self, group_id):
+    if not self.chat_display:
+        return
+    
     for widget in self.chat_display.winfo_children():
         widget.destroy()
 
@@ -27,12 +30,13 @@ def show_chat(self, group_id):
             button.pack(fill=tk.X, pady=2)
             button.bind("<Button-1>", lambda e, f=file_name: open_file(f))
     
-    for widget in self.names_frame.winfo_children():
-        if widget.cget("text") == group.name:
-            widget.config(bg="brown", fg="white")
-            self.active_label = widget
-        else:
-            widget.config(bg="lightgray", fg="black")
+    if self.names_frame:
+        for widget in self.names_frame.winfo_children():
+            if widget.cget("text") == group.name:
+                widget.config(bg="brown", fg="white")
+                self.active_label = widget
+            else:
+                widget.config(bg="lightgray", fg="black")
 
 def send_message(self):
     message = self.chat_entry.get()

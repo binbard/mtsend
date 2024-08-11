@@ -17,6 +17,8 @@ def show_chat(self, group_id):
 
     group = self.admin_service.group_manager.get_group(group_id)
 
+    self.current_group_id = group_id
+
     chat_history = group.messages
     for message in chat_history:
         if message["type"] == "text":
@@ -53,6 +55,8 @@ def screen_my_groups(self):
         widget.destroy()
 
     self.title(self.get_title('My Groups'))
+
+    self.current_group_id = None
     
     header_frame = tk.Frame(self.main_frame)
     header_frame.pack(padx=40, pady=(20, 10), fill=tk.X)
