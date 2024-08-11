@@ -18,9 +18,10 @@ class GroupSocket():
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 
         self.group_id = group_id
-        group: Group = self.group_manager.get_group_by_id(group_id)
+        self.group: Group = self.group_manager.get_group(group_id)
 
-        self.sock.bind((get_my_ip(), group.port))
+        print("Binding TOOOO", self.group.port+1)
+        self.sock.bind((get_my_ip(), self.group.port+1))
         
         self.sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         self.sock.setsockopt(socket.IPPROTO_IP, socket.IP_MULTICAST_TTL, 2)
@@ -35,7 +36,7 @@ class GroupSocket():
         threading.Thread(target=self.listen, daemon=True).start()
 
     def listen(self):
-        mprint(f'Admin Group Listen PORT {self.host} and Send PORT {self.port}')
+        mprint(f'Admin Group Listen PORT {self.group.port}')
         while True:
             try:
                 data, address = self.sock.recvfrom(1024)

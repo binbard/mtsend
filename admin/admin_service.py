@@ -3,6 +3,7 @@ from lib.main_socket import MainSocket
 from lib.device_manager import DeviceManager
 from lib.group_manager import GroupManager
 from models.packet_type import PacketType
+from admin.admin_group_socket import GroupSocket
 from models.message import Message
 from models.file import File
 import uuid
@@ -48,8 +49,13 @@ class AdminService:
                         continue
 
                     with conn:
+                        if group.sock is None:
+                            print(f"Starting group socket for {group.name} on port {port}")
+                            group_socket = GroupSocket(self.device_manager, self.group_manager, group_id)
+                            group.sock = group_socket.sock
+                            group_socket.start()
                         print(f"Connected by {addr}")
-                        group_data = json.dumps(group.__dict__)
+                        group_data = json.dumps(group.to_dict())
                         packet = struct.pack(globals.fmt_str, PacketType.GROUP_INFO.value, group_data.encode())
                         conn.sendall(packet)
             except socket.timeout:
@@ -114,4 +120,5 @@ class AdminService:
         address = (globals.MC_SEND_HOST, globals.MC_SEND_PORT)
         
         packet = struct.pack(globals.fmt_str, packet_type.value, data)
-        group.sock.sendto(packet, globals.MC_SEND_HOST, group.port)
+        print(f"Group Sending {packet_type.name} to {group.name}")
+        group.sock.sendto(packet, (globals.MC_SEND_HOST, int(group.port)))

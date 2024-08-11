@@ -18,7 +18,7 @@ class GroupSocket():
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 
         self.group_id = group_id
-        group: Group = self.group_manager.get_group_by_id(group_id)
+        group: Group = self.group_manager.get_group(group_id)
 
         self.sock.bind((get_my_ip(), group.port))
         
