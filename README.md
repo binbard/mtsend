@@ -1,9 +1,10 @@
 ## mtsend - Multicast File Sharing System
 
 ## Snapshots
-<img src="ss/python_HW20v93mLj.png" alt="Description" width="400"/>
-<img src="ss/python_B6SSydK27H.png" alt="Description" width="400"/>
-<img src="ss/python_Z17Lq2Chne.png" alt="Description" width="400"/>
+<img src="ss/python_HW20v93mLj.png" alt="Online Devices" width="400"/>
+<img src="ss/python_B6SSydK27H.png" alt="Group Chat" width="400"/>
+<img src="ss/python_vHkxBr8iMh.png" alt="My Identity" width="400"/>
+<img src="ss/WindowsTerminal_FM3XErsasa.png" alt="Start" width="400"/>
 
 ## Approach
 0. We have tried reducing the number of packets sent by transferring files over Multicast (UDP) instead of sending to each client separately (TCP) and have handled the leftover chunks by re-requesting them as all the packets may not reach all the clients in UDP.
