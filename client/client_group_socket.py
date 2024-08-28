@@ -80,7 +80,7 @@ class GroupSocket():
                     file_name = file.name[:30]
                     self.dfiles[file_name] = file
                     # self.group.add_message(f'Receiving <{file.name}> Size: {file.size} Chunks: {file.total_chunks}')
-                    message: Message = Message(json_data['type'], json_data['content'])
+                    message: Message = Message(file_json['type'], file_json['content'])
 
                     globals.service_queue.put({'type': EventType.GROUP_CHAT_UPDATED})
                     mprint(f'Admin {address} sending a file info {file_name}')
@@ -92,11 +92,21 @@ class GroupSocket():
                     if file is None:
                         mprint(f'File {file_name} not found')
                         continue
-                    if file.is_completed():
+                    if len(file.data) != file.total_chunks:
+                        mprint(f'File {file_name} not fully received Chunks received: {len(file.data)}/{file.total_chunks}')
+                        chunks_info = {
+                            'file_name': file_name,
+                            'file_path': file.path,
+                            'chunks_not_recv': file.get_left_chunks()
+                        }
+                        json_data = json.dumps(chunks_info)
+                        self.send_message(PacketType.GROUP_FILE_CHUNKS_NOT_RECV, json_data.encode('utf-8'))
+                        continue
+                    else:
                         mprint(f"Full file received: {file_name} Chunks received: {len(file.data)}/{file.total_chunks}")
                         file.save_file()
                         self.group.add_message(f'Received <{file.name}> Size: {fmt_size(file.size)}')
-                        message: Message = Message(json_data['type'], json_data['content'])
+                        # message: Message = Message(json_data['type'], json_data['content'])
                         globals.service_queue.put({'type': EventType.GROUP_CHAT_UPDATED})
                         mprint(f'Admin {address} sending a file info {file_name}')
                 
